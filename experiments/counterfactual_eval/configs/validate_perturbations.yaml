@@ -1,0 +1,16 @@
+# Step 2b: QC report on the raw editor output (length ratio, evidence that the
+# requested operation was applied, within-parent duplicates). Informational only:
+# build_evalset.yaml reads the raw file so per-dose counts stay balanced, and
+# `python -m experiments.counterfactual_eval.inspect_corpus` is the hard gate on the built set.
+#
+#   python -m experiments.counterfactual_eval.validate_perturbations --config experiments/counterfactual_eval/configs/validate_perturbations.yaml
+input:
+  perturbations: data/interim/perturbations_qwen_editor.jsonl
+output:
+  accepted: data/interim/perturbations_qwen_editor.accepted.jsonl
+  rejected: data/interim/perturbations_qwen_editor.rejected.jsonl
+
+min_length_ratio: 0.40
+max_length_ratio: 2.00
+require_operation_evidence: true
+reject_duplicate_outputs_within_parent: true

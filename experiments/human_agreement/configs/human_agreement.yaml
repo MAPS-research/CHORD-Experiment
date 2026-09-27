@@ -1,0 +1,115 @@
+# Table 3 / appendix: agreement with the MAUVE human study (Pillutla et al., 2021).
+# Every metric scores the exact texts the raters judged, reconstructed from the
+# released annotation CSV by experiments.human_agreement.build_mauve_human_eval, and each
+# metric's ranking of the eight GPT-2 settings is correlated with the
+# Bradley-Terry human scores.
+# - Candidate text = first 256 GPT-2 tokens of (35-token prompt + continuation),
+#   the cut the raters saw.
+# - Reference = held-out WebText test documents (never judged, >= 200 tokens,
+#   same 256-token cut); one whitespace policy for every corpus.
+# - n_eval 512 (the smallest setting has 578 texts); z values are specific to
+#   this protocol and not comparable in magnitude to Tables 1-2.
+#
+#   python -m chord.featurize --config experiments/human_agreement/configs/human_agreement.yaml
+seed: 20260713
+runs_manifest: human_agreement_runs.jsonl
+output_dir: ../../../outputs/casestudy/human_agreement
+text_normalization: whitespace
+reference:
+  path: ../../../outputs/casestudy/human_agreement/reference_judged256.jsonl
+  text_key: text
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 532
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: chord-qwen3.5-2b-student
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: mikezhu/chord-qwen3.5-2b-student
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: mauve-gpt2
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512  # full display window (texts are <=256 GPT-2 tokens)
+      pooling: last
+      normalization: none
+      model_dtype: float16
+      cache_dtype: float32
+  - name: mauve-electra
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: google/electra-large-discriminator
+      revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      tokenizer_revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      max_length: 512
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: fbd-bert
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: bert-base-uncased
+      revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      tokenizer_revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      max_length: 512
+      pooling: pooler_output
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: minilm-cls
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: sentence-transformers/all-MiniLM-L6-v2
+      revision: c9745ed1d9f207416be6d2e6f8de32d1f16199bf
+      tokenizer_revision: c9745ed1d9f207416be6d2e6f8de32d1f16199bf
+      max_length: 512
+      pooling: cls
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+scoring:
+  # score.py's own MMD pass runs on the cheap MiniLM features; the CHORD z/raw
+  # values come from score_chord.py (identical split/null/RNG math) so the
+  # expensive 5120-d MMD draws run exactly once.
+  mmd_encoder: minilm-cls
+  draws: 200
+  n_eval: 512
+  dev_size: 150
+  block_size: 1024
+  mauve_seeds: [20260620, 20260621, 20260622, 20260623, 20260624]
+generation_metrics:
+  model: gpt2-large
+  revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  cache_path: ../../../outputs/casestudy/human_agreement/cache/gen_ppl.sqlite
+  max_length: 512
+  batch_size: 8
+  device: cuda:0
+  model_dtype: float16

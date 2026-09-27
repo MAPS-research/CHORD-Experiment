@@ -1,0 +1,51 @@
+# Prompt-wording ablation on Qwen3.5-27B, layer -3: one encoder per readout
+# template (the PromptEOL original plus order-, flow- and consistency-oriented
+# wordings and several free-form templates). Only the template differs from the
+# default encoder. Templates are compared on the selection half of the parents
+# (prompt_split_eval) and reported on the confirmation half.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_prompt_wording.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 8
+
+encoders:
+  - name: q35-p-meaning
+    protocol: &p27
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: null
+      tokenizer_revision: null
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: meaning
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: q35-p-order
+    protocol:
+      <<: *p27
+      prompteol_template: order
+  - name: q35-p-flow
+    protocol:
+      <<: *p27
+      prompteol_template: flow
+  - name: q35-p-consist
+    protocol:
+      <<: *p27
+      prompteol_template: consistency
+  - name: q35-p-topicscore
+    protocol:
+      <<: *p27
+      prompteol_template: 'Rate this passage : "{text}" , in terms of its topic, logical coherence and the order of its ideas, on a scale of 1 to 5:'
+  - name: q35-p-wordcoh
+    protocol:
+      <<: *p27
+      prompteol_template: 'Summarize the logical coherence and idea ordering of this passage in exactly one word: "{text}"'
+  - name: q35-p-cmpplan
+    protocol:
+      <<: *p27
+      prompteol_template: 'Does this passage read like it was written with a clear logical plan, or does it feel improvised and disjointed? Passage: "{text}"'
+  - name: q35-p-reverse
+    protocol:
+      <<: *p27
+      prompteol_template: 'What is missing or wrong with the logical structure of this passage, if anything? "{text}"'

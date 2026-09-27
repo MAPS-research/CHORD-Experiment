@@ -1,0 +1,96 @@
+# Single-fold unconditional-generation protocol (predecessor of the Table 2 fold
+# protocol, still used by experiments/student_eval/run_eval.sh as a quick student check):
+# every metric against a 700-window packed-512 OpenWebText reference, 150-window
+# bandwidth dev split, 137 candidates per generator; generators at 3 seeds
+# (autoregressive at 1), ELF-L at 64 steps with self-conditioning CFG 4.
+#
+#   python -m chord.featurize --config experiments/single_fold/configs/single_fold_all_metrics.yaml
+#   python -m experiments.generation_scoring.score --config experiments/single_fold/configs/single_fold_all_metrics.yaml
+seed: 20260707
+runs_manifest: single_fold_runs.jsonl
+output_dir: ../../../outputs/casestudy/single_fold
+text_normalization: whitespace  # one surface policy for reference + every system
+reference:
+  path: ../../../outputs/casestudy/single_fold/reference_packed512.jsonl
+  text_key: text
+  limit: 700
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 532
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: chord-qwen3.5-2b-student
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: mikezhu/chord-qwen3.5-2b-student
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: mauve-electra
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: google/electra-large-discriminator
+      revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      tokenizer_revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      max_length: 512  # full window: truncating below the sequence length hides long-range degeneracy
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: mauve-gpt2
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512  # full window: truncating below the sequence length hides long-range degeneracy
+      pooling: last
+      normalization: none
+      model_dtype: float16
+      cache_dtype: float32
+  - name: fbd-bert
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: bert-base-uncased
+      revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      tokenizer_revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      max_length: 512
+      pooling: pooler_output
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+scoring:
+  mmd_encoder: qwen35-27b-prompteol-coherence-l62
+  draws: 200
+  n_eval: 256
+  dev_size: 150
+  block_size: 1024
+  mauve_seeds: [20260620, 20260621, 20260622, 20260623, 20260624]
+generation_metrics:
+  model: gpt2-large
+  revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  cache_path: ../../../outputs/casestudy/single_fold/cache/gen_ppl.sqlite
+  max_length: 512
+  batch_size: 8
+  device: cuda:0
+  model_dtype: float16

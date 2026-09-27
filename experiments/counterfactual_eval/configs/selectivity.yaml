@@ -1,0 +1,16 @@
+# Table 1 scoring for every featurized encoder: for each perturbation family and
+# dose, z = null-standardized RBF-MMD against the human reference (exchangeable
+# null, bandwidth = median distance on a 1,500-text dev split), and detection
+# S = z(harmful) - z(benign paraphrase) with a hierarchical parent-level bootstrap
+# CI; a family counts as detected when the CI lower bound is above zero.
+#
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.dose_response --corpus-dir outputs/counterfactual/meta_eval
+draws: 200
+n_eval: 1000
+dev_size: 1500
+block_size: 1024
+nominal_alpha: 0.05
+# Order is the standing capacity wall; flag the top-dose order conditions.
+wall_families: [sentence_permutation__r100, local_shuffle__r100]
+# encoders: auto-detected from feats/ when omitted

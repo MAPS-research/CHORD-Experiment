@@ -1,0 +1,4 @@
+1. Read the entire passage to identify the central topic and assess whether the sentences collectively build a unified body of information rather than appearing as a disjointed heap of facts.
+2. Analyze the logical flow between sentences to determine if ideas progress naturally, using appropriate transitions and maintaining a clear organizational structure.
+3. Evaluate the overall structure to ensure the passage is well-organized, with a clear beginning, development, and conclusion (ignoring any abrupt cutoff at the very end).
+4. Assign a score from 1 to 5 based on the degree of coherence, where 1 indicates a lack of structure and 5 indicates a highly organized and logically flowing text.

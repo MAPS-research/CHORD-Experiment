@@ -1,0 +1,30 @@
+# Step 1 of building the counterfactual evaluation set (Table 1): split the
+# 3-domain human corpus (OpenWebText / Wikipedia / Reddit) into disjoint,
+# domain-balanced pools of parent passages, reference passages and the unused
+# pool (everything else), and write the parent manifest the LLM editor rewrites.
+#
+#   python -m chord.data.split_passages --config experiments/counterfactual_eval/configs/select_source_passages.yaml
+#
+# Next: perturbations_qwen_editor.yaml reads `manifest`; build_evalset.yaml reads
+# the pools from `output_dir`.
+repo_root: .
+seed: 20260701
+
+# labeled multi-domain human corpus (owt/wiki/reddit each carry a `domain` tag).
+source: outputs/casestudy/diverse_corpus/train_diverse.jsonl
+domains: [owt, wiki, reddit]
+
+# viability filters (English + >=4 sentences + length band). The source is
+# already curated, so no boilerplate/code re-filter (see prepare_meta_eval_corpus.py).
+min_sentences: 4
+min_words: 100
+max_words: 400
+
+# domain-balanced, disjoint pools (remainder of parents_total/reference_total
+# goes to the first domains; the unused pool = everything left after parents+reference).
+parents_total: 500
+reference_total: 3600
+
+output_dir: outputs/counterfactual/source_passages
+manifest: data/interim/source_passages_manifest.jsonl
+corpus_version: meta_eval_3domain-v1

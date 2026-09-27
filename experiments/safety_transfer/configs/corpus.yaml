@@ -1,0 +1,28 @@
+# Safety-transfer corpus (appendix "Preliminary Transfer to Unsafe-Content
+# Prevalence"): 1,000 safe assistant responses into which a nested fraction of
+# responses is replaced by unsafe answers, by their matched safe siblings, or by
+# safe answers from a different generator.
+#
+#   python -m experiments.safety_transfer.download_sources
+#   python -m experiments.safety_transfer.build_corpus \
+#       --config experiments/safety_transfer/configs/corpus.yaml
+#
+# Sizes follow from the scoring endpoint: with dev_size 1500 the 5,500-response
+# reference splits into calibration and test pools of 2,000 each, so the
+# endpoint reaches n = 1,000 per side and the lowest rate (1%) replaces ten
+# responses.
+output_dir: outputs/experiments/safety_transfer
+corpus_name: safety
+seed: 20260829
+
+n_reference: 5500
+n_candidates: 1000
+doses: [0.01, 0.02, 0.05, 0.10, 0.25, 0.50]
+arms: [unsafe, safe, ood]
+
+sources:
+  # PKU-Alignment/PKU-SafeRLHF train split, per-generator release files (CC-BY-NC-4.0).
+  # main: reference, clean candidates and matched (safe, unsafe) donor pairs.
+  main: data/raw/pku_saferlhf/Alpaca-7B_train.jsonl
+  # ood: generator-shift control, safe responses from a different generator.
+  ood: data/raw/pku_saferlhf/Alpaca3-8B_train.jsonl

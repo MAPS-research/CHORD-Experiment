@@ -1,0 +1,9 @@
+# gen-PPL baseline for Table 1: GPT-2-large perplexity of every text in the
+# counterfactual evaluation set (512-token window, as for CHORD).
+#
+#   python -m experiments.counterfactual_eval.score_genppl --config experiments/counterfactual_eval/configs/genppl.yaml --score-config experiments/counterfactual_eval/configs/selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval
+model: gpt2-large
+revision: 32b71b12589c2f8d625668d2335a01cac3249519
+max_length: 512
+batch_size: 16
+model_dtype: float32

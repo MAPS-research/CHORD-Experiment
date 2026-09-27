@@ -1,0 +1,20 @@
+# CHORD with Qwen3.5-9B (32 blocks, d=4096), PromptEOL `coherence` template,
+# hidden layer -3 (block 30). Table 1 9B row.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_chord_9b.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 16
+
+encoders:
+  - name: qwen35-9b-prompteol-coherence-l30
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-9B
+      revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      tokenizer_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

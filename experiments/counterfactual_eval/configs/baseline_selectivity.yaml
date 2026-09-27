@@ -1,0 +1,41 @@
+# Table 1 baseline rows, with the same detection frame as selectivity.yaml:
+# exchangeable null, z, S = z(harmful) - z(benign), parent-level CI. Features
+# come from encoders_baselines.yaml; gen-PPL values from experiments.counterfactual_eval.score_genppl.
+#
+#   gen-PPL (GPT-2)    genppl    |difference of mean per-passage log-PPL|
+#   Unigram entropy    entropy   |difference of mean per-passage unigram entropy|
+#   MAUVE (GPT-2)      fikl      MAUVE's k-means KL frontier integral on gpt2-large-last
+#   MAUVE (ELECTRA)    fikl      the same on electra-mean
+#   FBD (BERT)         fbd       Frechet distance on fbd-bert (Xiang et al., 2021)
+#   MMD (MiniLM)       mmd_chan  RBF-MMD on minilm-cls, bandwidth = half the median
+#                                pairwise distance of each comparison (Chan et al., 2024)
+#
+# The k-means KL rows use fewer draws because every draw re-runs MAUVE's k-means
+# quantization. Random draws are keyed by (statistic, features, corpus), so the
+# order of the entries does not change any number.
+#
+#   python -m experiments.counterfactual_eval.baseline_selectivity --config experiments/counterfactual_eval/configs/baseline_selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval
+n_eval: 1000
+dev_size: 1500
+
+statistics:
+  - name: genppl
+    lane: scalar
+    draws: 200
+    values_dir: genppl
+  - name: entropy
+    lane: scalar
+    draws: 200
+    values_dir: entropy
+  - name: fikl
+    lane: feats
+    draws: 80
+    encoders: [gpt2-large-last, electra-mean]
+  - name: fbd
+    lane: feats
+    draws: 200
+    encoders: [fbd-bert]
+  - name: mmd_chan
+    lane: feats
+    draws: 200
+    encoders: [minilm-cls]

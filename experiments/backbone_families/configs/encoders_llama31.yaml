@@ -1,0 +1,25 @@
+# CHORD with Llama-3.1-8B-Instruct (Table 1 row "Llama-3.1-8B-Instruct").
+# Same protocol as the Qwen rows: PromptEOL `coherence` template, hidden layer -3
+# (block 30 of 32), max_length 512, RBF-MMD. Nothing is re-tuned per family.
+# The checkpoint is the ungated NousResearch mirror of
+# meta-llama/Llama-3.1-8B-Instruct that produced the paper's numbers.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/backbone_families/configs/encoders_llama31.yaml --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval \
+#       --only-encoders llama31-8b-prompteol-coherence-l30
+batch_size: 8
+
+encoders:
+  - name: llama31-8b-prompteol-coherence-l30
+    protocol:
+      backend: huggingface
+      model: NousResearch/Meta-Llama-3.1-8B-Instruct
+      revision: null
+      tokenizer_revision: null
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

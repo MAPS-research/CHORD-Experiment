@@ -1,0 +1,57 @@
+# e5-mistral-7b-instruct as a feature space for CHORD's RBF-MMD endpoint (table tab:modern-baselines).
+# Final-layer last-token embedding, L2-normalized, with the model's native
+# instruction template: 'Instruct: {task}\nQuery: {text}' followed by the tokenizer's EOS token. Three input settings: no
+# instruction, a similarity instruction and a coherence instruction.
+# max_length 512 is the evaluation set's shared text budget; append_eos
+# reserves the terminal token so truncation never removes it.
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/embedding_evaluator_baselines/configs/encoders_e5_mistral_7b.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval
+#   for ENC in e5mistral-7b-none e5mistral-7b-sts e5mistral-7b-coh; do
+#     python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml \
+#         --corpus-dir outputs/counterfactual/meta_eval --only-encoders $ENC --out-suffix _modern_$ENC
+#   done
+batch_size: 16
+encoders:
+  - name: e5mistral-7b-none
+    protocol:
+      backend: huggingface
+      model: intfloat/e5-mistral-7b-instruct
+      revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      tokenizer_revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "{text}"
+      append_eos: true
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: e5mistral-7b-sts
+    protocol:
+      backend: huggingface
+      model: intfloat/e5-mistral-7b-instruct
+      revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      tokenizer_revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "Instruct: Retrieve semantically similar text.\nQuery: {text}"
+      append_eos: true
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: e5mistral-7b-coh
+    protocol:
+      backend: huggingface
+      model: intfloat/e5-mistral-7b-instruct
+      revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      tokenizer_revision: d62cc4417be0e3289c03dd459d1ef2d137e2554e
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "Instruct: Represent the passage in terms of its logical coherence and the order of its ideas.\nQuery: {text}"
+      append_eos: true
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32

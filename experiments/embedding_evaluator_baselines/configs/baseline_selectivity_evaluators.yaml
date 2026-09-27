@@ -1,0 +1,17 @@
+# Null standardization and benign-contrast detection for the source-free scalar
+# evaluators (table tab:modern-baselines), through the same scalar lane as
+# gen-PPL: statistic = |mean candidate score - mean reference score|,
+# exchangeable clean-vs-clean null (200 draws), S = z(harmful) - z(benign),
+# parent-level CI.
+#   python -m experiments.counterfactual_eval.baseline_selectivity \
+#       --config experiments/embedding_evaluator_baselines/configs/baseline_selectivity_evaluators.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval --out-suffix _evaluators
+# --out-suffix is required: without it the output overwrites baseline_selectivity.csv.
+n_eval: 1000
+dev_size: 1500
+
+statistics:
+  - {name: unieval_fluency, lane: scalar, draws: 200, values_dir: unieval_fluency}
+  - {name: unieval_coherence, lane: scalar, draws: 200, values_dir: unieval_coherence}
+  - {name: unieval_overall, lane: scalar, draws: 200, values_dir: unieval_overall}
+  - {name: bartscore, lane: scalar, draws: 200, values_dir: bartscore}

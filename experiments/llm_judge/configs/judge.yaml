@@ -1,0 +1,24 @@
+# Direct 0-10 coherence judge on the counterfactual evaluation set
+# (appendix table tab:judge-counterfactual). The judge is the Qwen3.5-27B
+# snapshot CHORD uses as its encoder, served through an OpenAI-compatible
+# endpoint:
+#   vllm serve Qwen/Qwen3.5-27B --revision fc05daec18b0a78c049392ed2e771dde82bdf654 \
+#       --served-model-name qwen35-27b-judge --max-model-len 4096
+#   python -m experiments.llm_judge.judge_evaluation_set \
+#       --config experiments/llm_judge/configs/judge.yaml --corpus-dir outputs/counterfactual/meta_eval
+# Per-document scores -> <corpus-dir>/judge/<set>.npy.
+values_dir: judge
+concurrency: 32
+impute_median: false        # failed documents stay NaN; |mean shift| drops them
+
+judge:
+  base_url: http://127.0.0.1:8000/v1
+  model: qwen35-27b-judge
+  temperature: 0.0
+  seed: 20260721
+  timeout_seconds: 180
+  max_retries: 5
+  max_completion_tokens: 200
+  flush_every: 200
+  chat_template_kwargs:
+    enable_thinking: false  # plain JSON reply from the Qwen3.5 chat template

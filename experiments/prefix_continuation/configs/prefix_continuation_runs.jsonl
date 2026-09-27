@@ -1,0 +1,7 @@
+{"run_id": "human", "model": "Human", "family": "human", "seed": 0, "samples_path": "../../../outputs/casestudy/prefix_continuation/human.jsonl"}
+{"run_id": "ar_nucleus_flat", "model": "GPT2-med AR (nucleus)", "family": "autoregressive", "seed": 20260621, "samples_path": "../../../outputs/casestudy/prefix_continuation/ar_nucleus_flat.jsonl"}
+{"run_id": "ar_greedy_flat", "model": "GPT2-med AR (greedy)", "family": "autoregressive", "seed": 20260621, "samples_path": "../../../outputs/casestudy/prefix_continuation/ar_greedy_flat.jsonl"}
+{"run_id": "ar_hot_flat", "model": "GPT2-med AR (T=1.6)", "family": "autoregressive", "seed": 20260621, "samples_path": "../../../outputs/casestudy/prefix_continuation/ar_hot_flat.jsonl"}
+{"run_id": "sedd_cond", "model": "SEDD (cond.)", "family": "score-entropy-discrete", "seed": 20260621, "samples_path": "../../../outputs/casestudy/prefix_continuation/sedd_cond.jsonl"}
+{"run_id": "mdlm_cond", "model": "MDLM (cond.)", "family": "masked-discrete", "seed": 20260621, "samples_path": "../../../outputs/casestudy/prefix_continuation/mdlm_cond.jsonl"}
+{"run_id": "wrong_source", "model": "Human (wrong source)", "family": "faithfulness-probe", "seed": 0, "samples_path": "../../../outputs/casestudy/prefix_continuation/wrong_source.jsonl"}

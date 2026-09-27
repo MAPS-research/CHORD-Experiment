@@ -1,0 +1,126 @@
+# Prompt factorization (Section 4 / attribution appendix): target attribute x
+# elicitation format on Qwen3.5-27B, layer -3. Every cell is reported; no prompt
+# is selected on these results.
+#   Panel A: compact-completion format fixed; five target attributes (coherence,
+#            grammar, quality, topic, sentiment) x three wordings.
+#   Panel B: coherence attribute fixed; three wordings x three formats
+#            (compact completion, scalar rating, direct answer).
+# Text position, final-token readout, backbone, layer, distance and the 492-token
+# passage budget are fixed; max_length varies only by the prompt suffix length.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_prompt_factorization.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 8
+
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    factors: {attribute: coherence, wording: w1, format: compact}
+    prompt_text: 'This passage : "{text}" , in terms of its logical coherence and the order of its ideas, means in one word:'
+    protocol: &base
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: 'This passage : "{text}" , in terms of its logical coherence and the order of its ideas, means in one word:'
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+
+  - name: q35-fac-coherence-w2-compact
+    factors: {attribute: coherence, wording: w2, format: compact}
+    prompt_text: &coh_w2_compact 'This passage : "{text}" , considering whether its ideas form a logically connected and well-ordered whole, means in one word:'
+    protocol: {<<: *base, max_length: 513, prompteol_template: *coh_w2_compact}
+  - name: q35-fac-coherence-w3-compact
+    factors: {attribute: coherence, wording: w3, format: compact}
+    prompt_text: &coh_w3_compact 'This passage : "{text}" , considering the consistency, organization, and logical flow of its ideas, means in one word:'
+    protocol: {<<: *base, max_length: 512, prompteol_template: *coh_w3_compact}
+
+  - name: q35-fac-topic-w1-compact
+    factors: {attribute: topic, wording: w1, format: compact}
+    prompt_text: &topic_w1 'This passage : "{text}" , considering its main topic and subject matter, means in one word:'
+    protocol: {<<: *base, max_length: 507, prompteol_template: *topic_w1}
+  - name: q35-fac-topic-w2-compact
+    factors: {attribute: topic, wording: w2, format: compact}
+    prompt_text: &topic_w2 'This passage : "{text}" , considering what subject its content is about, means in one word:'
+    protocol: {<<: *base, max_length: 507, prompteol_template: *topic_w2}
+  - name: q35-fac-topic-w3-compact
+    factors: {attribute: topic, wording: w3, format: compact}
+    prompt_text: &topic_w3 'This passage : "{text}" , considering the topic shared across its statements, means in one word:'
+    protocol: {<<: *base, max_length: 507, prompteol_template: *topic_w3}
+
+  - name: q35-fac-grammar-w1-compact
+    factors: {attribute: grammar, wording: w1, format: compact}
+    prompt_text: &grammar_w1 'This passage : "{text}" , considering its grammaticality and linguistic fluency, means in one word:'
+    protocol: {<<: *base, max_length: 509, prompteol_template: *grammar_w1}
+  - name: q35-fac-grammar-w2-compact
+    factors: {attribute: grammar, wording: w2, format: compact}
+    prompt_text: &grammar_w2 'This passage : "{text}" , considering whether its sentences are grammatically well formed, means in one word:'
+    protocol: {<<: *base, max_length: 509, prompteol_template: *grammar_w2}
+  - name: q35-fac-grammar-w3-compact
+    factors: {attribute: grammar, wording: w3, format: compact}
+    prompt_text: &grammar_w3 'This passage : "{text}" , considering its grammar, syntax, and fluency, means in one word:'
+    protocol: {<<: *base, max_length: 509, prompteol_template: *grammar_w3}
+
+  - name: q35-fac-sentiment-w1-compact
+    factors: {attribute: sentiment, wording: w1, format: compact}
+    prompt_text: &sentiment_w1 'This passage : "{text}" , considering its overall sentiment, means in one word:'
+    protocol: {<<: *base, max_length: 504, prompteol_template: *sentiment_w1}
+  - name: q35-fac-sentiment-w2-compact
+    factors: {attribute: sentiment, wording: w2, format: compact}
+    prompt_text: &sentiment_w2 'This passage : "{text}" , considering whether its tone is positive or negative, means in one word:'
+    protocol: {<<: *base, max_length: 508, prompteol_template: *sentiment_w2}
+  - name: q35-fac-sentiment-w3-compact
+    factors: {attribute: sentiment, wording: w3, format: compact}
+    prompt_text: &sentiment_w3 'This passage : "{text}" , considering the emotional polarity it expresses, means in one word:'
+    protocol: {<<: *base, max_length: 506, prompteol_template: *sentiment_w3}
+
+  - name: q35-fac-quality-w1-compact
+    factors: {attribute: quality, wording: w1, format: compact}
+    prompt_text: &quality_w1 'This passage : "{text}" , considering its overall writing quality, means in one word:'
+    protocol: {<<: *base, max_length: 505, prompteol_template: *quality_w1}
+  - name: q35-fac-quality-w2-compact
+    factors: {attribute: quality, wording: w2, format: compact}
+    prompt_text: &quality_w2 'This passage : "{text}" , considering how well written it is, means in one word:'
+    protocol: {<<: *base, max_length: 506, prompteol_template: *quality_w2}
+  - name: q35-fac-quality-w3-compact
+    factors: {attribute: quality, wording: w3, format: compact}
+    prompt_text: &quality_w3 'This passage : "{text}" , considering its overall textual quality, means in one word:'
+    protocol: {<<: *base, max_length: 505, prompteol_template: *quality_w3}
+
+  # Panel B: same three coherence semantics, alternative carriers.  The text
+  # remains before the instruction and the state immediately after the final
+  # colon is always read, removing the placement/read-position confound in the
+  # earlier prompt sweep.
+  - name: q35-fac-coherence-w1-rating
+    factors: {attribute: coherence, wording: w1, format: rating}
+    prompt_text: &coh_w1_rating 'This passage : "{text}" . Considering its logical coherence and the order of its ideas, rate it from 1 to 5:'
+    protocol: {<<: *base, max_length: 514, prompteol_template: *coh_w1_rating}
+  - name: q35-fac-coherence-w2-rating
+    factors: {attribute: coherence, wording: w2, format: rating}
+    prompt_text: &coh_w2_rating 'This passage : "{text}" . Considering whether its ideas form a logically connected and well-ordered whole, rate it from 1 to 5:'
+    protocol: {<<: *base, max_length: 517, prompteol_template: *coh_w2_rating}
+  - name: q35-fac-coherence-w3-rating
+    factors: {attribute: coherence, wording: w3, format: rating}
+    prompt_text: &coh_w3_rating 'This passage : "{text}" . Considering the consistency, organization, and logical flow of its ideas, rate it from 1 to 5:'
+    protocol: {<<: *base, max_length: 516, prompteol_template: *coh_w3_rating}
+  - name: q35-fac-coherence-w1-answer
+    factors: {attribute: coherence, wording: w1, format: answer}
+    prompt_text: &coh_w1_answer 'This passage : "{text}" . Considering its logical coherence and the order of its ideas, provide a yes or no judgment:'
+    protocol: {<<: *base, max_length: 512, prompteol_template: *coh_w1_answer}
+  - name: q35-fac-coherence-w2-answer
+    factors: {attribute: coherence, wording: w2, format: answer}
+    prompt_text: &coh_w2_answer 'This passage : "{text}" . Considering whether its ideas form a logically connected and well-ordered whole, provide a yes or no judgment:'
+    protocol: {<<: *base, max_length: 515, prompteol_template: *coh_w2_answer}
+  - name: q35-fac-coherence-w3-answer
+    factors: {attribute: coherence, wording: w3, format: answer}
+    prompt_text: &coh_w3_answer 'This passage : "{text}" . Considering the consistency, organization, and logical flow of its ideas, provide a yes or no judgment:'
+    protocol: {<<: *base, max_length: 514, prompteol_template: *coh_w3_answer}
+
+analysis:
+  neutral_encoder: q35-p-meaning
+  raw_encoders: [q35-raw-last, q35-raw-mean]
+  group_order: [relation, discourse, order, repetition, corpus_mix, dlm_mix]
+  primary_half: confirmation
+  replication_half: selection

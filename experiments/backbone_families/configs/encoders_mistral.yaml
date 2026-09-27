@@ -1,0 +1,37 @@
+# CHORD with Mistral backbones (Table 1 rows "Mistral-Small-24B" and "Ministral-8B").
+# Same protocol as the Qwen rows: PromptEOL `coherence` template, hidden layer -3
+# (Ministral-8B: block 34 of 36; Mistral-Small-24B: block 38 of 40), max_length 512,
+# RBF-MMD. Nothing is re-tuned per family.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/backbone_families/configs/encoders_mistral.yaml --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval \
+#       --only-encoders mistral-8b-prompteol-coherence-l34,mistral-24b-prompteol-coherence-l38
+batch_size: 8
+
+encoders:
+  - name: mistral-8b-prompteol-coherence-l34
+    protocol:
+      backend: huggingface
+      model: mistralai/Ministral-8B-Instruct-2410
+      revision: 2f494a194c5b980dfb9772cb92d26cbb671fce5a
+      tokenizer_revision: 2f494a194c5b980dfb9772cb92d26cbb671fce5a
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: mistral-24b-prompteol-coherence-l38
+    protocol:
+      backend: huggingface
+      model: mistralai/Mistral-Small-24B-Instruct-2501
+      revision: 9527884be6e5616bdd54de542f9ae13384489724
+      tokenizer_revision: 9527884be6e5616bdd54de542f9ae13384489724
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

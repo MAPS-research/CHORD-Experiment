@@ -1,0 +1,127 @@
+# Backbone x extraction-method grid on GPT-2 (appendix "Representation
+# Extraction and Prompt-Design Ablations", Table tab:gpt2-extraction-grid).
+#
+# Four GPT-2 sizes x four ways of extracting the representation, with the same
+# protocol as the Qwen3.5-27B cells of the table: hidden layer -3, 512-token
+# budget, no normalization, float32 (GPT-2's training precision).
+#   coherence prompt  final token after CHORD's coherence template
+#   generic prompt    final token after the PromptEOL template
+#   raw last token    final token of the bare passage
+#   mean pooling      attention-masked mean over the bare passage
+# The Qwen3.5-27B rows of the table use qwen35-27b-prompteol-coherence-l62
+# (encoders_chord_27b.yaml), q35-p-meaning (encoders_prompt_wording.yaml) and
+# q35-raw-last / q35-raw-mean (encoders_no_prompt.yaml).
+# `factors:` records each encoder's backbone, size and readout.
+#
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/readout_ablations/configs/encoders_gpt2_extraction.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval --out-suffix _gpt2_extraction \
+#       --only-encoders gpt2sm-coh,gpt2sm-gen,...   (the 16 names below)
+batch_size: 32
+
+_templates:
+  coherence: &coherence 'This passage : "{text}" , in terms of its logical coherence and the order of its ideas, means in one word:'
+  generic: &generic 'This sentence : "{text}" means in one word:'
+
+encoders:
+  # ---- GPT-2 (124M) ----
+  - name: gpt2sm-coh
+    factors: {backbone: GPT-2, params_b: 0.124, readout: coherence-prompt}
+    protocol: &gpt2
+      backend: huggingface
+      model: gpt2
+      revision: 607a30d783dfa663caf39e06633721c8d4cfcd7e
+      tokenizer_revision: 607a30d783dfa663caf39e06633721c8d4cfcd7e
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: *coherence
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: gpt2sm-gen
+    factors: {backbone: GPT-2, params_b: 0.124, readout: generic-prompt}
+    protocol: {<<: *gpt2, prompteol_template: *generic}
+  - name: gpt2sm-rawlast
+    factors: {backbone: GPT-2, params_b: 0.124, readout: raw-last}
+    protocol: {<<: *gpt2, pooling: last, prompteol_template: null}
+  - name: gpt2sm-rawmean
+    factors: {backbone: GPT-2, params_b: 0.124, readout: mean-pooling}
+    protocol: {<<: *gpt2, pooling: mean, prompteol_template: null}
+
+  # ---- GPT-2-medium (355M) ----
+  - name: gpt2md-coh
+    factors: {backbone: GPT-2-medium, params_b: 0.355, readout: coherence-prompt}
+    protocol: &gpt2m
+      backend: huggingface
+      model: gpt2-medium
+      revision: 6dcaa7a952f72f9298047fd5137cd6e4f05f41da
+      tokenizer_revision: 6dcaa7a952f72f9298047fd5137cd6e4f05f41da
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: *coherence
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: gpt2md-gen
+    factors: {backbone: GPT-2-medium, params_b: 0.355, readout: generic-prompt}
+    protocol: {<<: *gpt2m, prompteol_template: *generic}
+  - name: gpt2md-rawlast
+    factors: {backbone: GPT-2-medium, params_b: 0.355, readout: raw-last}
+    protocol: {<<: *gpt2m, pooling: last, prompteol_template: null}
+  - name: gpt2md-rawmean
+    factors: {backbone: GPT-2-medium, params_b: 0.355, readout: mean-pooling}
+    protocol: {<<: *gpt2m, pooling: mean, prompteol_template: null}
+
+  # ---- GPT-2-large (774M), MAUVE's featurizer ----
+  - name: gpt2lg-coh
+    factors: {backbone: GPT-2-large, params_b: 0.774, readout: coherence-prompt}
+    protocol: &gpt2l
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: *coherence
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: gpt2lg-gen
+    factors: {backbone: GPT-2-large, params_b: 0.774, readout: generic-prompt}
+    protocol: {<<: *gpt2l, prompteol_template: *generic}
+  - name: gpt2lg-rawlast
+    factors: {backbone: GPT-2-large, params_b: 0.774, readout: raw-last}
+    protocol: {<<: *gpt2l, pooling: last, prompteol_template: null}
+  - name: gpt2lg-rawmean
+    factors: {backbone: GPT-2-large, params_b: 0.774, readout: mean-pooling}
+    protocol: {<<: *gpt2l, pooling: mean, prompteol_template: null}
+
+  # ---- GPT-2-XL (1.56B) ----
+  - name: gpt2xl-coh
+    factors: {backbone: GPT-2-XL, params_b: 1.558, readout: coherence-prompt}
+    protocol: &gpt2xl
+      backend: huggingface
+      model: gpt2-xl
+      revision: 15ea56dee5df4983c59b2538573817e1667135e2
+      tokenizer_revision: 15ea56dee5df4983c59b2538573817e1667135e2
+      max_length: 512
+      layer: -3
+      pooling: prompteol
+      prompteol_template: *coherence
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: gpt2xl-gen
+    factors: {backbone: GPT-2-XL, params_b: 1.558, readout: generic-prompt}
+    protocol: {<<: *gpt2xl, prompteol_template: *generic}
+  - name: gpt2xl-rawlast
+    factors: {backbone: GPT-2-XL, params_b: 1.558, readout: raw-last}
+    protocol: {<<: *gpt2xl, pooling: last, prompteol_template: null}
+  - name: gpt2xl-rawmean
+    factors: {backbone: GPT-2-XL, params_b: 1.558, readout: mean-pooling}
+    protocol: {<<: *gpt2xl, pooling: mean, prompteol_template: null}

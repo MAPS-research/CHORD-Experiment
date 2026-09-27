@@ -1,0 +1,33 @@
+# No-prompt ablation on Qwen3.5-27B, layer -3: does the coherence template do
+# the work, or is any 27B read enough? Two prompt-free readouts of the bare text:
+#   q35-raw-last   last-token hidden state
+#   q35-raw-mean   attention-masked mean over all tokens
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_no_prompt.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 8
+
+encoders:
+  - name: q35-raw-last
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: null
+      tokenizer_revision: null
+      max_length: 512
+      layer: -3
+      pooling: last
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: q35-raw-mean
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: null
+      tokenizer_revision: null
+      max_length: 512
+      layer: -3
+      pooling: mean
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

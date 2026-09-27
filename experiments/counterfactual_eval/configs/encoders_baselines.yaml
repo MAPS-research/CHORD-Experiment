@@ -1,0 +1,61 @@
+# Feature extractors of the Table 1 baseline rows, on the same corpus and
+# 512-token budget as CHORD. Each metric uses the extractor its own paper
+# specifies; the comment above each entry says how the vector is taken and
+# which Table 1 row reads it (statistics in baseline_selectivity.yaml).
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_baselines.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 64
+
+encoders:
+  # GPT-2-large, final hidden state of the last token (left padding, position -1);
+  # the official MAUVE featurizer. -> MAUVE (GPT-2)
+  - name: gpt2-large-last
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512
+      pooling: last
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  # ELECTRA-large discriminator, final hidden states averaged over non-padding
+  # tokens. -> MAUVE (ELECTRA)
+  - name: electra-mean
+    protocol:
+      backend: huggingface
+      model: google/electra-large-discriminator
+      revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      tokenizer_revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      max_length: 512
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  # bert-base-uncased pooler output (tanh-projected [CLS]), as in Xiang et al.
+  # (2021). -> FBD (BERT)
+  - name: fbd-bert
+    protocol:
+      backend: huggingface
+      model: bert-base-uncased
+      revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      tokenizer_revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      max_length: 512
+      pooling: pooler_output
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  # all-MiniLM-L6-v2 final hidden state of [CLS], as in Chan et al. (2024).
+  # -> MMD (MiniLM)
+  - name: minilm-cls
+    protocol:
+      backend: huggingface
+      model: sentence-transformers/all-MiniLM-L6-v2
+      revision: c9745ed1d9f207416be6d2e6f8de32d1f16199bf
+      tokenizer_revision: c9745ed1d9f207416be6d2e6f8de32d1f16199bf
+      max_length: 512
+      pooling: cls
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32

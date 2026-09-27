@@ -1,0 +1,74 @@
+# Figure 5: prefix continuation. Every metric (CHORD, MAUVE with GPT-2 and
+# ELECTRA features, FBD, gen-PPL) scores continuations of the same OpenWebText
+# prefixes from human text, GPT-2 medium (nucleus / greedy / high temperature),
+# SEDD and MDLM, plus a wrong-source control, against a disjoint pool of 400
+# human continuations.
+#
+#   python -m chord.featurize --config experiments/prefix_continuation/configs/prefix_continuation_all_metrics.yaml
+#   python -m experiments.generation_scoring.score --config experiments/prefix_continuation/configs/prefix_continuation_all_metrics.yaml
+#   python -m experiments.generation_scoring.score_generation --config experiments/prefix_continuation/configs/prefix_continuation_all_metrics.yaml
+seed: 20260621
+runs_manifest: prefix_continuation_runs.jsonl
+output_dir: ../../../outputs/casestudy/prefix_continuation
+text_normalization: whitespace  # normalize reference/human and model lanes alike
+
+reference:
+  path: ../../../outputs/casestudy/prefix_continuation/reference_pool.jsonl
+  text_key: text
+  limit: 400
+
+encoders:
+  - name: mauve-gpt2
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 256
+      pooling: last
+      normalization: none
+      model_dtype: float16
+      cache_dtype: float32
+  - name: mauve-electra
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: google/electra-large-discriminator
+      revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      tokenizer_revision: c13c3df7efadc2162f42588bd28eb4e187d602a5
+      max_length: 256
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: fbd-bert
+    batch_size: 64
+    protocol:
+      backend: huggingface
+      model: bert-base-uncased
+      revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      tokenizer_revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      max_length: 512
+      pooling: pooler_output
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+
+scoring:
+  mmd_encoder: qwen35-27b-prompteol-coherence-l62
+  draws: 200
+  n_eval: 200
+  dev_size: 80
+  block_size: 1024
+  mauve_seeds: [20260620, 20260621, 20260622, 20260623, 20260624]
+
+generation_metrics:
+  model: gpt2-large
+  revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  cache_path: ../../../outputs/casestudy/prefix_continuation/cache/gen_ppl.sqlite
+  max_length: 256
+  batch_size: 8
+  device: cuda:0
+  model_dtype: float16

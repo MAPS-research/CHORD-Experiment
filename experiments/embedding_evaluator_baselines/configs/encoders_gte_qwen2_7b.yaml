@@ -1,0 +1,57 @@
+# gte-Qwen2-7B-instruct as a feature space for CHORD's RBF-MMD endpoint (table tab:modern-baselines).
+# Final-layer last-token embedding, L2-normalized, with the model's native
+# instruction template: 'Instruct: {task}\nQuery: {text}' followed by <|endoftext|>. Three input settings: no
+# instruction, a similarity instruction and a coherence instruction.
+# max_length 512 is the evaluation set's shared text budget; append_eos
+# reserves the terminal token so truncation never removes it.
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/embedding_evaluator_baselines/configs/encoders_gte_qwen2_7b.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval
+#   for ENC in gteqwen2-7b-none gteqwen2-7b-sts gteqwen2-7b-coh; do
+#     python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml \
+#         --corpus-dir outputs/counterfactual/meta_eval --only-encoders $ENC --out-suffix _modern_$ENC
+#   done
+batch_size: 16
+encoders:
+  - name: gteqwen2-7b-none
+    protocol:
+      backend: huggingface
+      model: Alibaba-NLP/gte-Qwen2-7B-instruct
+      revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      tokenizer_revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "{text}"
+      append_eos: "<|endoftext|>"
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: gteqwen2-7b-sts
+    protocol:
+      backend: huggingface
+      model: Alibaba-NLP/gte-Qwen2-7B-instruct
+      revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      tokenizer_revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "Instruct: Retrieve semantically similar text.\nQuery: {text}"
+      append_eos: "<|endoftext|>"
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: gteqwen2-7b-coh
+    protocol:
+      backend: huggingface
+      model: Alibaba-NLP/gte-Qwen2-7B-instruct
+      revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      tokenizer_revision: a8d08b36ada9cacfe34c4d6f80957772a025daf2
+      max_length: 512
+      layer: last
+      pooling: prompteol
+      prompteol_template: "Instruct: Represent the passage in terms of its logical coherence and the order of its ideas.\nQuery: {text}"
+      append_eos: "<|endoftext|>"
+      normalization: l2
+      model_dtype: bfloat16
+      cache_dtype: float32

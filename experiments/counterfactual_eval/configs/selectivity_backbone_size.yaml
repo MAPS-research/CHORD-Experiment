@@ -1,0 +1,14 @@
+# Detection for the backbone-size ablation (encoders_backbone_size.yaml), same
+# protocol as selectivity.yaml. Writes selectivity_by_family_backbone_size.csv.
+draws: 200
+n_eval: 1000
+dev_size: 1500
+block_size: 1024
+nominal_alpha: 0.05
+wall_families: [sentence_permutation__r100, local_shuffle__r100]
+encoders:
+  - qwen35-0.8b-prompteol-coherence-last
+  - qwen35-2b-prompteol-coherence-last
+  - qwen35-4b-prompteol-coherence-last
+  - qwen35-9b-prompteol-coherence-last
+  - qwen35-27b-prompteol-coherence-last

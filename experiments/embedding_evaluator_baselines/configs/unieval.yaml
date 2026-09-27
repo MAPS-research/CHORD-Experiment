@@ -1,0 +1,20 @@
+# UniEval on the counterfactual evaluation set (table tab:modern-baselines).
+# fluency   = unieval-sum with the official sentence-level averaging;
+# coherence = unieval-intermediate with a source-free zero-shot question;
+# overall   = mean of the two.
+#   python -m experiments.embedding_evaluator_baselines.unieval_scores \
+#       --config experiments/embedding_evaluator_baselines/configs/unieval.yaml --corpus-dir outputs/counterfactual/meta_eval
+sum_model: MingZhong/unieval-sum
+sum_revision: ed8da5a8aa01b19d49a5f8738d382ced54b73ad0
+intermediate_model: MingZhong/unieval-intermediate
+intermediate_revision: a6297590e3358307d425499c17a8ec92ce3318e1
+cache_dir: null              # default Hugging Face cache ($HF_HOME)
+max_length: 1024             # official UniEvaluator default
+batch_size: 64
+dtype: float32
+coherence_question: "Is this a coherent and logically consistent passage?"
+coherence_field: passage
+values_dirs:
+  fluency: unieval_fluency
+  coherence: unieval_coherence
+  overall: unieval_overall

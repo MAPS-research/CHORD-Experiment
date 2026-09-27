@@ -1,0 +1,80 @@
+# Source-conditioned QA faithfulness (appendix). The texts already contain the
+# source-conditioned prompt ending in "..., in one word:", so the readout is the
+# final-token hidden state with no extra template (pooling: last); Qwen encoders
+# read layer -3 as in the coherence configuration.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_qa_faithfulness.yaml --corpus-dir outputs/casestudy/qa_faithfulness/evalset
+batch_size: 16
+encoders:
+  - name: qwen35-27b-src-l62
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 512
+      layer: -3
+      pooling: last
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: qwen35-9b-src-l30
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-9B
+      revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      tokenizer_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      max_length: 512
+      layer: -3
+      pooling: last
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: chord-qwen3.5-2b-student-src
+    protocol:
+      backend: huggingface
+      # absolute path to the trained student checkpoint (handed straight to from_pretrained)
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-2b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 512
+      pooling: last
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  # baseline rows of the QA table: same texts (prompt included), each model's
+  # own natural read-out
+  - name: gpt2-large-src-last
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512
+      pooling: last
+      normalization: none
+      model_dtype: float16
+      cache_dtype: float32
+  - name: neobert-src-mean
+    protocol:
+      backend: huggingface
+      model: chandar-lab/NeoBERT
+      revision: null
+      tokenizer_revision: null
+      trust_remote_code: true
+      max_length: 512
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32
+  - name: bert-src-mean
+    protocol:
+      backend: huggingface
+      model: bert-base-uncased
+      revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      tokenizer_revision: 86b5e0934494bd15c9632b12f734a8a67f723594
+      max_length: 512
+      pooling: masked_mean
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32

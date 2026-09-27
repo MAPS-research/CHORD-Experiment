@@ -1,0 +1,39 @@
+# Score YOUR newly trained student on the unconditional-generation lane
+# (the paper's Table 2 protocol: cap-532 readout, packed-512 OWT reference).
+#
+#   python -m chord.featurize      --config experiments/student_eval/configs/eval_student_single_fold.yaml
+#   python -m experiments.generation_scoring.score_chord --config experiments/student_eval/configs/eval_student_single_fold.yaml
+#
+# Keep `name` in sync with eval_student_counterfactual.yaml and unique per checkpoint.
+seed: 20260707
+runs_manifest: ../../../experiments/single_fold/configs/single_fold_runs.jsonl
+output_dir: ../../../outputs/distill/eval_ladder
+text_normalization: whitespace
+reference:
+  path: ../../../outputs/casestudy/single_fold/reference_packed512.jsonl
+  text_key: text
+  limit: 700
+encoders:
+  - name: my-student-v1
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      # ABSOLUTE path to a checkpoint dir, or a Hugging Face repo id.
+      # This one field is NOT resolved relative to this config file — it is
+      # handed straight to from_pretrained. experiments/student_eval/run_eval.sh fills
+      # in the absolute path for you; edit it here only if running by hand.
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-2b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+scoring:
+  mmd_encoder: my-student-v1
+  draws: 200
+  n_eval: 256
+  dev_size: 150
+  block_size: 1024

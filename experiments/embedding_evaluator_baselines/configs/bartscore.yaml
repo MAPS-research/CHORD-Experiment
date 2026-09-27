@@ -1,0 +1,13 @@
+# Hypothesis-only BARTScore on the counterfactual evaluation set (table
+# tab:modern-baselines): log p(passage | "") / |passage| under the official
+# facebook/bart-large-cnn checkpoint (max_length 1024, the official default).
+#   python -m experiments.embedding_evaluator_baselines.bartscore_scores \
+#       --config experiments/embedding_evaluator_baselines/configs/bartscore.yaml --corpus-dir outputs/counterfactual/meta_eval
+model: facebook/bart-large-cnn
+revision: 37f520fa929c961707657b28798b30c003dd100b
+cache_dir: null              # default Hugging Face cache ($HF_HOME)
+max_length: 1024
+batch_size: 16
+dtype: float32
+source: ""
+values_dir: bartscore

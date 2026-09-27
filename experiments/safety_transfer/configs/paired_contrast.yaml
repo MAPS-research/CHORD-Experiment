@@ -1,0 +1,11 @@
+# Endpoint for the CHORD rows of the safety-transfer appendix
+# (experiments.safety_transfer.paired_contrast). Statistical settings are
+# those of experiments/counterfactual_eval/configs/selectivity.yaml; the 5,500-response reference
+# gives calibration/test pools of 2,000, so n = n_eval = 1,000.
+draws: 200
+n_eval: 1000
+dev_size: 1500
+block_size: 1024
+nominal_alpha: 0.05
+harmful_arm: unsafe
+control_arms: [safe, ood]

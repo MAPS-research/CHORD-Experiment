@@ -1,0 +1,39 @@
+# Position robustness (appendix "Effect of Coherence-Failure Position on
+# Detection"): five ways of reading a representation from the same frozen
+# Qwen3.5-9B backbone, final hidden layer, 512-token budget so all three
+# injection positions stay inside the window.
+#
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/position_robustness/configs/encoders.yaml \
+#       --corpus-dir outputs/experiments/position_robustness
+#   python -m experiments.position_robustness.analyze \
+#       --corpus-dir outputs/experiments/position_robustness
+batch_size: 32
+
+encoders:
+  # CHORD readout: final token after the coherence prompt
+  - name: q35-9b-prompteol-coherence-l512
+    protocol: &qwen9b
+      backend: huggingface
+      model: Qwen/Qwen3.5-9B
+      revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      tokenizer_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  # final-token state of the bare passage, no prompt
+  - name: q35-9b-last-l512
+    protocol: {<<: *qwen9b, pooling: last}
+  # attention-masked mean over all tokens of the bare passage
+  - name: q35-9b-mean-l512
+    protocol: {<<: *qwen9b, pooling: mean}
+  # generic PromptEOL prompt ('This sentence : "..." means in one word:')
+  - name: q35-9b-prompteol-l512
+    protocol: {<<: *qwen9b, pooling: prompteol, prompteol_template: meaning}
+  # MetaEOL-style multi-view: raw final token and PromptEOL final token,
+  # each L2-normalized, concatenated
+  - name: q35-9b-multi-concat-l512
+    protocol: {<<: *qwen9b, pooling: prompteol_multi}

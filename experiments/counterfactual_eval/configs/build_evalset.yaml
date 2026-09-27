@@ -1,0 +1,68 @@
+# Step 3: assemble the counterfactual evaluation set (Table 1): nine perturbation
+# families, each at three dose levels with uniform edit positions, plus the
+# benign paraphrase control, the clean parents and the human reference, all in
+# one corpus with one conditions manifest.
+#
+#   python -m chord.data.counterfactual --config experiments/counterfactual_eval/configs/build_evalset.yaml
+#
+# Next: featurize (encoders_*.yaml), then score (selectivity.yaml).
+# A group whose input file is absent is logged as skipped; the rule-based
+# groups (sentence order, repetition, corpus mixing) need no model.
+repo_root: .
+output_dir: outputs/counterfactual/meta_eval
+corpus_name: meta_eval
+seed: 20260701
+
+# 3-domain (OWT+Wiki+Reddit) balanced parent set from prepare_meta_eval_corpus.py.
+n_parents: 500
+n_reference: 3600
+min_sentences: 4
+position: uniform          # per-sample uniform placement over the passage
+
+sources:
+  # produced by prepare_meta_eval_corpus.py (disjoint parents / reference / unused pool).
+  clean_candidates: outputs/counterfactual/source_passages/clean_candidates.jsonl
+  reference:        outputs/counterfactual/source_passages/reference.jsonl
+  # human passages whose sentences are spliced in (human-splice control, corpus
+  # mix), DISJOINT from the parents (no self-splice leakage). Absent -> falls back
+  # to the parent pool (legacy behavior).
+  human_splice_pool: outputs/counterfactual/source_passages/unused_pool.jsonl
+  # optional — real DLM samples whose sentences are spliced in (glob supported):
+  dlm_splice_pool:  outputs/casestudy/single_fold/samples/*.jsonl
+  # optional — dose-graded LLM counterfactual edits, produced by:
+  #   python -m chord.data.generate_perturbations --config experiments/counterfactual_eval/configs/perturbations_qwen_editor.yaml
+  # (needs the editor LLM server; see that config). Absent -> LLM families +
+  # paraphrase benign are skipped and the 0-dose parents become the benign anchor.
+  llm_perturbations: data/interim/perturbations_qwen_editor.jsonl
+
+# --- GROUP 1a: counterfactual deterministic order / repetition (CPU) ----------
+rule_doses: [0.10, 0.25, 0.50, 0.75, 1.00]     # replacement-rate dose sweep
+rule_families:
+  - {alias: sentence_permutation, rule: sentence_permute, group: order}
+  - {alias: local_shuffle,        rule: local_shuffle,    group: order, options: {window_size: 4}}
+  - {alias: repetition,           rule: sentence_repeat,  group: repetition}
+
+# --- GROUP 1b: counterfactual LLM semantic / discourse (needs editor LLM) ------
+# dose = n_edits; must match dose_levels in perturbations_qwen_editor.yaml.
+# (an omission family was dropped by design: not reported in the paper.)
+llm_families:
+  # require_anchor: the ANCHORED construction's machine check — build drops rows
+  # whose quoted ANCHOR (the contradicted counterpart claim) does not survive in
+  # the perturbed passage. See perturbations_qwen_editor.yaml.
+  - {alias: contradiction,     members: [internal_contradiction], group: relation, require_anchor: true}
+  - {alias: causal_reverse,    members: [causal_reverse],         group: relation}
+  - {alias: broken_transition, members: [broken_transition],      group: discourse}
+  - {alias: topic_drift,       members: [topic_drift],            group: discourse}
+# meaning-preserving benign control, now DOSE-GRADED (mild/moderate/severe ->
+# dose1/2/3, equal counts). The strongest paraphrase (dose3, most surface change)
+# is the kind=benign selectivity anchor; the others get a flat benign dose curve.
+benign_paraphrase: [para_lexical, para_syntactic]
+
+# --- GROUP 2: DLM mix (dlm_splice harmful vs matched human_splice control) ------
+dlm_splice:
+  doses: [0.10, 0.25, 0.50]      # replacement-rate dose sweep (matched positions)
+
+# --- GROUP 3: corpus mix (graded splice) ---------------------------------------
+corpus_mix:
+  rate_sweep:   {rates: [0.10, 0.25, 0.50, 0.75], n_sources: 8}
+  source_sweep: {rate: 0.50, n_sources_list: [1, 2, 4]}

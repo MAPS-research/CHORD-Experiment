@@ -1,0 +1,31 @@
+# Direct 0-10 judge on the unconditional-generation folds (appendix table
+# tab:judge-casestudy), on exactly the texts of Table 2: `fold_config` is
+# Table 2's config, whose runs, reference pool and seed permutation define the
+# 10 x 500 folds (150 dev windows skipped). Same served judge and prompt as
+# judge.yaml. Paths resolve relative to this file.
+#   python -m experiments.llm_judge.judge_unconditional_generation \
+#       --config experiments/llm_judge/configs/judge_unconditional_generation.yaml
+fold_config: ../../generator_eval/configs/featurize.yaml
+folds: 10
+size: 500
+dev: 150
+draws: 1000
+concurrency: 64
+# the window every Table 2 metric reads; only ELF-L's documents are longer
+truncation:
+  tokenizer: gpt2-large
+  revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  max_tokens: 512
+output_dir: ../../../outputs/experiments/llm_judge/unconditional_generation_folds
+
+judge:
+  base_url: http://127.0.0.1:8000/v1
+  model: qwen35-27b-judge
+  temperature: 0.0
+  seed: 20260721
+  timeout_seconds: 180
+  max_retries: 5
+  max_completion_tokens: 200
+  flush_every: 200
+  chat_template_kwargs:
+    enable_thinking: false

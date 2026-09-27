@@ -1,0 +1,82 @@
+# Table 2 (unconditional generation): every generator sampled at 10 new seeds x
+# 500 documents at the paper's operating points; human reference = 150 dev +
+# 10 x 500 fresh packed-512 OpenWebText windows; held-out human = 10 x 500.
+# Scored fold by fold by experiments/generator_eval/score_chord_folds.py
+# (mean +- std over 10 disjoint folds). Same readout protocol as
+# single_fold_chord_27b.yaml and eval_student_single_fold.yaml.
+#
+#   python -m chord.featurize --config experiments/generator_eval/configs/featurize.yaml --only-encoder <name>
+seed: 20260920
+runs_manifest: runs.jsonl
+output_dir: ../../../outputs/casestudy/unconditional_generation
+text_normalization: whitespace
+reference:
+  path: ../../../outputs/casestudy/unconditional_generation/human/reference_pool.jsonl
+  text_key: text
+  limit: 5150
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 532
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: chord-qwen3.5-2b-student
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      # absolute path to the trained student checkpoint (handed straight to from_pretrained)
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-2b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: chord-qwen3.5-0.8b-student
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      # absolute path to the trained student checkpoint (handed straight to from_pretrained)
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-0.8b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+  # MAUVE (GPT-2) features for the fold-protocol baseline columns of Table 2
+  # (same protocol block as single_fold_all_metrics.yaml).
+  - name: mauve-gpt2
+    batch_size: 32
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512
+      pooling: last
+      normalization: none
+      model_dtype: float16
+      cache_dtype: float32
+generation_metrics:
+  model: gpt2-large
+  revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+  cache_path: ../../../outputs/casestudy/unconditional_generation/cache/gen_ppl.sqlite
+  max_length: 512
+  batch_size: 8
+  device: cuda:0
+  model_dtype: float16

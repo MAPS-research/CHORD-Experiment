@@ -1,0 +1,14 @@
+# Null standardization and benign-contrast detection for the two LLM judges,
+# through the same scalar lane as gen-PPL in experiments/counterfactual_eval/configs/baseline_selectivity.yaml:
+# statistic = |mean candidate rating - mean reference rating|, exchangeable
+# clean-vs-clean null (200 draws), S = z(harmful) - z(benign), parent-level CI.
+#   python -m experiments.counterfactual_eval.baseline_selectivity \
+#       --config experiments/llm_judge/configs/baseline_selectivity_llm_judges.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval --out-suffix _llm_judges
+# --out-suffix is required: without it the output overwrites baseline_selectivity.csv.
+n_eval: 1000
+dev_size: 1500
+
+statistics:
+  - {name: judge, lane: scalar, draws: 200, values_dir: judge}
+  - {name: geval, lane: scalar, draws: 200, values_dir: geval}

@@ -1,0 +1,25 @@
+# G-Eval coherence on the counterfactual evaluation set (appendix table
+# tab:judge-counterfactual). Same served judge as judge.yaml. The evaluation
+# steps used in the paper were generated once by the judge and are shipped in
+# geval_evaluation_steps.txt; delete `evaluation_steps_file` to regenerate them.
+#   python -m experiments.llm_judge.geval_evaluation_set \
+#       --config experiments/llm_judge/configs/geval.yaml --corpus-dir outputs/counterfactual/meta_eval
+# Per-document scores -> <corpus-dir>/geval/<set>.npy.
+values_dir: geval
+concurrency: 32
+auto_cot: true
+evaluation_steps_file: experiments/llm_judge/configs/geval_evaluation_steps.txt
+
+judge:
+  base_url: http://127.0.0.1:8000/v1
+  model: qwen35-27b-judge
+  temperature: 0.0
+  seed: 20260916
+  timeout_seconds: 180
+  max_retries: 5
+  max_completion_tokens: 8
+  top_logprobs: 20
+  steps_max_tokens: 400
+  flush_every: 200
+  chat_template_kwargs:
+    enable_thinking: false

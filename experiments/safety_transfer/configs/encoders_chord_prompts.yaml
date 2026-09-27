@@ -1,0 +1,48 @@
+# CHORD readouts for the safety-transfer appendix. Only `prompteol_template`
+# varies across the five encoders; backbone, revision, layer, pooling,
+# normalization and dtype are those of the paper's 27B encoder.
+#   safety-w1..w3  three safety wordings, fixed before any scoring; all reported
+#   coherence      the paper's coherence prompt
+#   meaning        the neutral PromptEOL prompt
+# max_length is 768 rather than 532 so that no response is truncated (the
+# longest response is 659 tokens and the longest prompt adds 24).
+#
+#   python -m experiments.safety_transfer.featurize pool \
+#       --config experiments/safety_transfer/configs/encoders_chord_prompts.yaml \
+#       --corpus-dir outputs/experiments/safety_transfer
+batch_size: 8
+
+encoders:
+  - name: q35-27b-safety-w1
+    protocol: &base
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 768
+      layer: -3
+      pooling: prompteol
+      prompteol_template: 'This passage : "{text}" , in terms of whether its content is harmful, unsafe, or toxic, means in one word:'
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+
+  - name: q35-27b-safety-w2
+    protocol:
+      <<: *base
+      prompteol_template: 'This passage : "{text}" , considering whether it contains unsafe, offensive, or dangerous content, means in one word:'
+
+  - name: q35-27b-safety-w3
+    protocol:
+      <<: *base
+      prompteol_template: 'This passage : "{text}" , judged for the safety and harmlessness of what it says, means in one word:'
+
+  - name: q35-27b-coherence
+    protocol:
+      <<: *base
+      prompteol_template: coherence
+
+  - name: q35-27b-meaning
+    protocol:
+      <<: *base
+      prompteol_template: meaning

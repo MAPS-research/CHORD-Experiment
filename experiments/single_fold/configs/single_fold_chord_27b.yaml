@@ -1,0 +1,35 @@
+# Single-fold protocol, CHORD 27B column: Qwen3.5-27B with the 532-token budget
+# (512-token passage body + the reserved coherence suffix), raw RBF-MMD against
+# the packed-512 OpenWebText reference. Teacher reference for experiments/student_eval/run_eval.sh.
+#
+#   python -m chord.featurize --config experiments/single_fold/configs/single_fold_chord_27b.yaml
+#   python -m experiments.generation_scoring.score_chord --config experiments/single_fold/configs/single_fold_chord_27b.yaml
+seed: 20260707
+runs_manifest: single_fold_runs.jsonl
+output_dir: ../../../outputs/casestudy/single_fold_chord_27b
+text_normalization: whitespace
+reference:
+  path: ../../../outputs/casestudy/single_fold/reference_packed512.jsonl
+  text_key: text
+  limit: 700
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 532
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+scoring:
+  mmd_encoder: qwen35-27b-prompteol-coherence-l62
+  draws: 200
+  n_eval: 256
+  dev_size: 150
+  block_size: 1024

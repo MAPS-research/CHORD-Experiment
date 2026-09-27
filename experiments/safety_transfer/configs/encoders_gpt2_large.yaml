@@ -1,0 +1,21 @@
+# GPT-2-large final-token features (the official MAUVE featurizer) for the FBD,
+# FI-KL and MAUVE baselines of the safety-transfer appendix. Responses are about
+# 86 tokens long, so max_length 512 truncates nothing.
+#
+#   python -m experiments.safety_transfer.featurize pool \
+#       --config experiments/safety_transfer/configs/encoders_gpt2_large.yaml \
+#       --corpus-dir outputs/experiments/safety_transfer
+batch_size: 64
+
+encoders:
+  - name: gpt2-large-last
+    protocol:
+      backend: huggingface
+      model: gpt2-large
+      revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      tokenizer_revision: 32b71b12589c2f8d625668d2335a01cac3249519
+      max_length: 512
+      pooling: last
+      normalization: none
+      model_dtype: float32
+      cache_dtype: float32

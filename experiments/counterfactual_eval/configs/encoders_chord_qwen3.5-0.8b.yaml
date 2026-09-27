@@ -1,0 +1,23 @@
+# The distilled Qwen3.5-0.8B student (distillation/configs/student_qwen3.5-0.8b/train.yaml), the
+# 0.8B counterpart of the Table 1 student row. The checkpoint directory carries the readout projection
+# `projector.pt`, loaded automatically (256-d output). `model:` is passed to
+# from_pretrained: an absolute path to the trained checkpoint, or the Hub id of
+# the released student.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_chord_qwen3.5-0.8b.yaml --corpus-dir outputs/counterfactual/meta_eval
+batch_size: 32
+
+encoders:
+  - name: chord-qwen3.5-0.8b-student
+    protocol:
+      backend: huggingface
+      # absolute path to the trained student checkpoint (handed straight to from_pretrained)
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-0.8b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

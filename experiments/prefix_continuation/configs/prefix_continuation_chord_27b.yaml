@@ -1,0 +1,34 @@
+# Figure 5, CHORD column: the prefix-continuation runs scored with the
+# Qwen3.5-27B encoder (seed 20260621, n_eval 200, 80-text bandwidth dev split).
+# Writes z and raw RBF-MMD.
+#
+#   python -m chord.featurize --config experiments/prefix_continuation/configs/prefix_continuation_chord_27b.yaml
+#   python -m experiments.generation_scoring.score_chord --config experiments/prefix_continuation/configs/prefix_continuation_chord_27b.yaml
+seed: 20260621
+runs_manifest: prefix_continuation_runs.jsonl
+output_dir: ../../../outputs/casestudy/prefix_continuation
+reference:
+  path: ../../../outputs/casestudy/prefix_continuation/reference_pool.jsonl
+  text_key: text
+  limit: 400
+encoders:
+  - name: qwen35-27b-prompteol-coherence-l62
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 532
+      layer: -3
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32
+scoring:
+  mmd_encoder: qwen35-27b-prompteol-coherence-l62
+  draws: 200
+  n_eval: 200
+  dev_size: 80
+  block_size: 1024

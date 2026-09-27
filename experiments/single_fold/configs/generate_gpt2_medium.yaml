@@ -1,0 +1,14 @@
+# GPT-2 medium unconditional samples for the single-fold protocol: 300 documents,
+# nucleus sampling (T = 1.0, p = 0.95), 480-512 new tokens.
+#
+#   python -m chord.data.generate_ar --config experiments/single_fold/configs/generate_gpt2_medium.yaml
+model: gpt2-medium
+n_samples: 300
+max_new_tokens: 512
+min_new_tokens: 480
+temperature: 1.0
+top_p: 0.95
+repetition_penalty: 1.0
+batch_size: 12
+seed: 20260621
+output_path: ../../../outputs/casestudy/single_fold/samples/gpt2-medium-t1.0-p0.95-n300.jsonl

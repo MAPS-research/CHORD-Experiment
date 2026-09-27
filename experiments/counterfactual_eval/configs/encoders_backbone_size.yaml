@@ -1,0 +1,67 @@
+# Backbone-size ablation (Section 4): CHORD's readout on Qwen3.5 0.8B, 2B, 4B,
+# 9B and 27B. Readout fixed to the PromptEOL `coherence` template at the last
+# hidden layer (the only read position comparable across sizes), max_length 512.
+#
+#   python -m experiments.counterfactual_eval.featurize --config experiments/counterfactual_eval/configs/encoders_backbone_size.yaml --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity_backbone_size.yaml --corpus-dir outputs/counterfactual/meta_eval --out-suffix _backbone_size
+batch_size: 32
+
+encoders:
+  - name: qwen35-0.8b-prompteol-coherence-last
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-0.8B
+      revision: 2fc06364715b967f1860aea9cf38778875588b17
+      tokenizer_revision: 2fc06364715b967f1860aea9cf38778875588b17
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: qwen35-2b-prompteol-coherence-last
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-2B
+      revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
+      tokenizer_revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: qwen35-4b-prompteol-coherence-last
+    batch_size: 24
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-4B
+      revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+      tokenizer_revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: qwen35-9b-prompteol-coherence-last
+    batch_size: 16
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-9B
+      revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      tokenizer_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      model_dtype: bfloat16
+      cache_dtype: float32
+  - name: qwen35-27b-prompteol-coherence-last
+    batch_size: 8
+    protocol:
+      backend: huggingface
+      model: Qwen/Qwen3.5-27B
+      revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      tokenizer_revision: fc05daec18b0a78c049392ed2e771dde82bdf654
+      max_length: 512
+      pooling: prompteol
+      prompteol_template: coherence
+      model_dtype: bfloat16
+      cache_dtype: float32

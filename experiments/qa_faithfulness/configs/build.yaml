@@ -1,0 +1,33 @@
+# Source-conditioned QA faithfulness evaluation set (SQuAD v1.1 dev).
+#
+# Each item is (source passage C, question Q, statement S) composed into one
+# source-conditioned prompt; S is the sentence of C that contains the gold answer.
+# The faithful reference restates S (LLM paraphrase draw A); the three wrong-fact
+# conditions apply one FactCC edit (number / entity / negation) to that same
+# paraphrase, so each differs from the reference only by the injected fact; the
+# faithful control is an independent paraphrase draw B. Steps:
+#
+#   python -m experiments.qa_faithfulness.build_verbatim_conditions  --config experiments/qa_faithfulness/configs/build.yaml
+#   python -m experiments.qa_faithfulness.paraphrase_benign_control   --config experiments/qa_faithfulness/configs/build.yaml   # LLM
+#   python -m experiments.qa_faithfulness.build_paraphrase_conditions --config experiments/qa_faithfulness/configs/build.yaml   # LLM
+#   python -m experiments.qa_faithfulness.assemble_evalset            --config experiments/qa_faithfulness/configs/build.yaml
+#
+# Scoring then uses experiments/counterfactual_eval/configs/encoders_qa_faithfulness.yaml and
+# selectivity_qa_faithfulness.yaml on evalset_dir (experiments/qa_faithfulness/qa_*.slurm).
+seed: 20260621                 # RNG seed of the verbatim build (parents + edits)
+squad: data/squad/dev-v1.1.json   # SQuAD v1.1 dev set (rajpurkar/SQuAD-explorer)
+max_source_chars: 1200         # source passages are cut at a sentence boundary
+limit: 2000                    # number of (C, Q, S) parents
+texts_dir: outputs/casestudy/qa_faithfulness/source_conditioned   # per-condition texts
+evalset_dir: outputs/casestudy/qa_faithfulness/evalset            # what scoring reads
+evalset_seed: 20260920         # recorded in the evaluation set's conditions manifest
+
+paraphrase:
+  base_url: http://127.0.0.1:8000/v1   # OpenAI-compatible server
+  model: qwen3-30b-editor              # Qwen3-30B-A3B, the evaluation-set editor
+  workers: 8
+  benign_seed_base: 900000       # draw B: the faithful paraphrase control
+  reference_seed_base: 700000    # draw A: the reference and the wrong-fact base
+  min_valid_benign: 900          # abort if fewer draw-B paraphrases pass validation
+  contra_edit_seed: 20260711     # RNG seed of the edits applied to draw A
+  min_contra_items: 450          # abort if a wrong-fact condition gets fewer items

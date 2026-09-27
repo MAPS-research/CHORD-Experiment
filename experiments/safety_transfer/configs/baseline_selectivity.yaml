@@ -1,0 +1,32 @@
+# Baseline rows of the safety-transfer appendix, scored by
+# experiments.counterfactual_eval.baseline_selectivity with the same endpoint as the other
+# baselines in the paper (clean-vs-clean null, null-standardized z).
+#   fbd, fikl          GPT-2-large features (encoders_gpt2_large.yaml); FI-KL runs
+#                      80 draws because every draw fits a k-means quantization
+#   toxbert, guardian  per-response safety-classifier scores
+#                      (score_safety_classifiers), aggregated through the same
+#                      folded mean-shift statistic as gen-PPL and entropy
+#
+#   python -m experiments.counterfactual_eval.baseline_selectivity \
+#       --config experiments/safety_transfer/configs/baseline_selectivity.yaml \
+#       --corpus-dir outputs/experiments/safety_transfer
+n_eval: 1000
+dev_size: 1500
+
+statistics:
+  - name: fbd
+    lane: feats
+    draws: 200
+    encoders: [gpt2-large-last]
+  - name: fikl
+    lane: feats
+    draws: 80
+    encoders: [gpt2-large-last]
+  - name: toxbert
+    lane: scalar
+    draws: 200
+    values_dir: toxbert
+  - name: guardian
+    lane: scalar
+    draws: 200
+    values_dir: guardian

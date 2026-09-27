@@ -1,0 +1,32 @@
+# Featurize the counterfactual evaluation set with YOUR newly trained student.
+#
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/student_eval/configs/eval_student_counterfactual.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval
+#
+# Point `model` at a checkpoint directory written by distillation/training/train.py (any of
+# best/ final/ epochN/) and give the encoder a NAME YOU HAVE NOT USED BEFORE:
+# features are cached per encoder name, so reusing a name silently scores the
+# old checkpoint.
+#
+# The protocol block below must stay identical to experiments/counterfactual_eval/configs/encoders_chord_qwen3.5-2b.yaml
+# — it is the deployed student readout, and the student was trained to be it.
+batch_size: 32
+
+encoders:
+  - name: my-student-v1
+    protocol:
+      backend: huggingface
+      # ABSOLUTE path to a checkpoint dir, or a Hugging Face repo id.
+      # This one field is NOT resolved relative to this config file — it is
+      # handed straight to from_pretrained. experiments/student_eval/run_eval.sh fills
+      # in the absolute path for you; edit it here only if running by hand.
+      model: /ABSOLUTE/PATH/TO/outputs/distill/student_qwen3.5-2b/final
+      revision: null
+      tokenizer_revision: null
+      max_length: 532
+      pooling: prompteol
+      prompteol_template: coherence
+      normalization: none
+      model_dtype: bfloat16
+      cache_dtype: float32

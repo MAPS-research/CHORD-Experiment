@@ -1,0 +1,21 @@
+# Exact token-count representation for the hidden-state versus token-count
+# figure (fig_hidden_vs_token_shuffle). Each passage becomes an L1-normalized
+# count vector over a fixed vocabulary (the 2048 most frequent words of the
+# reference pool, plus one out-of-vocabulary bucket). It depends only on the
+# token multiset, so sentence shuffling leaves every row exactly unchanged.
+# CPU only, no downloads.
+#   python -m experiments.counterfactual_eval.featurize \
+#       --config experiments/token_verdict_decoding/configs/encoders_unigram_counts.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval
+#   python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml \
+#       --corpus-dir outputs/counterfactual/meta_eval --only-encoders unigram-count
+batch_size: 256
+encoders:
+  - name: unigram-count
+    protocol:
+      backend: unigram-count
+      model: exact-unigram-count
+      vocab_source: outputs/counterfactual/meta_eval/texts/reference.jsonl
+      vocab_size: 2048
+      pooling: l1-normalized-count
+      normalization: none
