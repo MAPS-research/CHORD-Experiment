@@ -42,7 +42,7 @@ results are read from and written to `data/` and `outputs/` here (gitignored).
 
 ## Data
 
-The corpora behind every table ship as a Hugging Face dataset whose tree mirrors
+The corpora behind every table ship as a Hugging Face dataset, [`mikezhu/chord-experiments-data`](https://huggingface.co/datasets/mikezhu/chord-experiments-data), whose tree mirrors
 `outputs/`, so the files land where the configs expect them:
 
 ```bash
@@ -95,8 +95,8 @@ Notes:
   your cluster, or run their Python entry points directly.
 - Encoder ids spell out the readout: `qwen35-27b-prompteol-coherence-l62` is
   Qwen3.5-27B read at hidden layer 62 of 64 (−3) after the `coherence`
-  PromptEOL template; `chord-qwen3.5-2b-student` and
-  `chord-qwen3.5-0.8b-student` are the distilled students.
+  PromptEOL template; [`chord-qwen3.5-2b-student`](https://huggingface.co/mikezhu/chord-qwen3.5-2b-student) and
+  [`chord-qwen3.5-0.8b-student`](https://huggingface.co/mikezhu/chord-qwen3.5-0.8b-student) are the distilled students.
 
 ### Shared inputs
 
