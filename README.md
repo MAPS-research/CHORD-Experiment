@@ -1,9 +1,10 @@
 # CHORD experiments
 
-This repository reproduces the tables and figures of the CHORD paper. CHORD
-embeds each passage with a frozen language model under a coherence-oriented
-PromptEOL readout and compares a generated corpus with a human reference corpus
-using RBF-MMD. The paper tests whether this distance detects relation- and
+This repository reproduces the tables and figures of the paper
+[**Coherence-Aware Distributional Evaluation of Open-Ended Text Generation**](https://arxiv.org/abs/2609.34240).
+CHORD embeds each passage with a frozen language model (the final-token hidden
+state after a coherence-oriented PromptEOL prompt) and compares a generated
+corpus with a human reference corpus using RBF-MMD. The paper tests whether this distance detects relation- and
 discourse-level coherence failures that likelihood statistics and standard
 distributional metrics miss, while staying stable under benign paraphrasing.
 
@@ -93,7 +94,7 @@ Notes:
 - The `.slurm` files under `experiments/` are the batch jobs we used; set
   `<SLURM_ACCOUNT>`, `<GPU_PARTITION>`, `<CPU_PARTITION>` and `CHORD_ROOT` for
   your cluster, or run their Python entry points directly.
-- Encoder ids spell out the readout: `qwen35-27b-prompteol-coherence-l62` is
+- Encoder ids spell out the model, prompt and layer: `qwen35-27b-prompteol-coherence-l62` is
   Qwen3.5-27B read at hidden layer 62 of 64 (−3) after the `coherence`
   PromptEOL template; [`chord-qwen3.5-2b-student`](https://huggingface.co/mikezhu/chord-qwen3.5-2b-student) and
   [`chord-qwen3.5-0.8b-student`](https://huggingface.co/mikezhu/chord-qwen3.5-0.8b-student) are the distilled students.
@@ -284,7 +285,7 @@ python -m experiments.layer_depth.selectivity_by_layer --sweep-dir outputs/exper
 #### Effect of coherence-failure position on detection
 
 One topic-drift sentence is inserted at the prefix, middle or suffix of each
-passage and five Qwen3.5-9B readouts are compared. The built corpus is in the
+passage and five Qwen3.5-9B pooling methods are compared. The built corpus is in the
 data bundle; rebuilding it from the current evaluation set gives a corpus with
 the same design but different passages.
 
@@ -317,7 +318,7 @@ python -m experiments.llm_judge.judge_evaluation_set --config experiments/llm_ju
 python -m experiments.llm_judge.geval_evaluation_set --config experiments/llm_judge/configs/geval.yaml --corpus-dir outputs/counterfactual/meta_eval
 python -m experiments.counterfactual_eval.baseline_selectivity --config experiments/llm_judge/configs/baseline_selectivity_llm_judges.yaml --corpus-dir outputs/counterfactual/meta_eval --out-suffix _llm_judges
 python -m experiments.llm_judge.judge_unconditional_generation --config experiments/llm_judge/configs/judge_unconditional_generation.yaml
-# bag-of-words control and next-token verdicts at CHORD's readout position
+# bag-of-words control and next-token verdicts at the final prompt token CHORD embeds
 python -m experiments.counterfactual_eval.featurize --config experiments/token_verdict_decoding/configs/encoders_unigram_counts.yaml --corpus-dir outputs/counterfactual/meta_eval
 python -m experiments.counterfactual_eval.selectivity --config experiments/counterfactual_eval/configs/selectivity.yaml --corpus-dir outputs/counterfactual/meta_eval --only-encoders unigram-count
 python -m experiments.token_verdict_decoding.decode --analysis content --model Qwen/Qwen3.5-27B --revision fc05daec18b0a78c049392ed2e771dde82bdf654 --corpus-dir outputs/counterfactual/meta_eval
@@ -371,3 +372,17 @@ python -m experiments.safety_transfer.mauve_scores --config experiments/safety_t
 | `experiments/metric_utils/` | the gen-PPL scorer and interval statistics shared by several experiments |
 | `experiments/<appendix name>/` | one package per appendix study, each with its own `configs/` |
 | `scripts/` | `download_data.py` (released texts, features, students), `download_openwebtext.py` |
+
+## Citation
+
+```bibtex
+@misc{liu2026coherenceawaredistributionalevaluationopenended,
+      title={Coherence-Aware Distributional Evaluation of Open-Ended Text Generation},
+      author={Jinnuo Liu and Junhao Zhu and Weifeng Jiang and Haoming Liu and Hongyi Wen},
+      year={2026},
+      eprint={2609.34240},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2609.34240},
+}
+```
